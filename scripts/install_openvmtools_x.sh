@@ -96,7 +96,7 @@ fi
 echo
 
 installPackages build-essential libgtk2.0-dev xorg-dev libproc-dev libicu-dev \
-libdumbnet-dev libglib2.0-dev libgtkmm-2.4-dev libnotify-dev libfuse-dev
+libdumbnet-dev libglib2.0-dev libgtkmm-2.4-dev libnotify-dev libfuse-dev \
 linux-headers-`uname -r`
 
 cd uriparser-*
