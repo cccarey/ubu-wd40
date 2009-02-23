@@ -86,6 +86,7 @@ tar xfz uriparser-$URIPARSER_VERSION.tar.gz
 if [ ! $? -eq 0 ]; then
     die "\nEncountered error extracting uriparser.  Check messages and try again."
 fi
+echo 
 
 echo -n "Extracting VMwareTools tar ball..."
 tar xfz /media/cdrom0/VMwareTools-*.tar.gz
@@ -94,7 +95,7 @@ if [ ! $? -eq 0 ]; then
 fi
 echo
 
-installPackages build-essential libgtk2.0-dev xorg-dev libproc-dev libicu-dev libdumbnet-dev linux-headers-`uname -r`
+installPackages build-essential libgtk2.0-dev xorg-dev libproc-dev libicu-dev libdumbnet-dev libglib2.0-dev linux-headers-`uname -r`
 
 cd uriparser-*
 ./configure
