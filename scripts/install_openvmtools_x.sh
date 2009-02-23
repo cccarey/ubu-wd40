@@ -95,7 +95,7 @@ if [ ! $? -eq 0 ]; then
 fi
 echo
 
-installPackages build-essential libgtk2.0-dev xorg-dev libproc-dev libicu-dev libdumbnet-dev libglib2.0-dev linux-headers-`uname -r`
+installPackages build-essential libgtk2.0-dev xorg-dev libproc-dev libicu-dev libdumbnet-dev libglib2.0-dev libgtkmm-2.4-dev linux-headers-`uname -r`
 
 cd uriparser-*
 ./configure
