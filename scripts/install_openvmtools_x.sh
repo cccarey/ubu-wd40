@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPEN_VM_TOOLS_VERSION="2009.01.21-142982"
+OPEN_VM_TOOLS_VERSION="2009.02.18-148847"
 OPEN_VM_TOOLS_MIRROR_PATH="http://internap.dl.sourceforge.net/sourceforge/open-vm-tools"
 URIPARSER_VERSION="0.7.4"
 URIPARSER_MIRROR_PATH="http://internap.dl.sourceforge.net/sourceforge/uriparser"
