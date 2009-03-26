@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPEN_VM_TOOLS_VERSION="2009.02.18-148847"
+OPEN_VM_TOOLS_VERSION="2009.03.18-154848"
 OPEN_VM_TOOLS_MIRROR_PATH="http://internap.dl.sourceforge.net/sourceforge/open-vm-tools"
 
 # Prior to running this script, you must attach the VMWare Tools iso to the cdrom drive.
