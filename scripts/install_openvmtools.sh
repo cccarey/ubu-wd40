@@ -84,7 +84,7 @@ fi
 umount /media/cdrom0
 echo
 
-installPackages build-essential libproc-dev libicu-dev libdumbnet-dev libglib2.0-dev linux-headers-`uname -r`
+installPackages build-essential libproc-dev libicu-dev libdumbnet-dev libglib2.0-dev libnotify-dev libfuse-dev linux-headers-`uname -r`
 
 cd open-vm-tools-*
 ./configure --without-x
