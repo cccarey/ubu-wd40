@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+quicken_install() {
+	winetricks fontfix
+	winetricks corefonts vcrun6
+	winetricks gdiplus
+	winetricks dotnet20
+	winetricks ie6
+	winetricks ie8
+	winecfg
+	
+	wine /tmp/Quicken_Deluxe_2011.exe
+	exit 0
+}
+
+tricks() { 
+	winetricks
+	exit 0
+}
+
+cfg() { 
+	winecfg 
+}
+
+run() {
+	wine "c:\program files\quicken\qw.exe"
+}
+
+export WINEPREFIX=$HOME/.wine-quicken/
+export WINEARCH=win32
+OPTION=$1
+
+if [ ! -z "$OPTION" ]
+then
+	if [ "$OPTION" = "install" ]
+	then
+		quicken_install
+	elif [ "$OPTION" = "tricks" ]
+	then
+		tricks
+	elif [ "$OPTION" = "cfg" ]
+	then
+		cfg
+	fi
+else
+	run
+fi
+
