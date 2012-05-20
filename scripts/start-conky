@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+conky 2>/dev/null
