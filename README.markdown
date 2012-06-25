@@ -2,6 +2,14 @@
 
 A collection of "lubricant" for Ubuntu
 
+## FocusWriter themes ##
+
+Get FocusWriter from [here](http://gottcode.org/focuswriter/)
+
+* **christiancareysite.fwtz** - colors based on my old [web site](http://christiancarey.com)
+* **darkgreen.fwtz** - dark green colors
+* **darkbrown.fwtz** - dark brown colors
+
 ## Daily Use Scripts ##
 
 *   **ge** - script to start gedit and open the provided file. If gedit is already running and set to single instance, opens the provided file.
@@ -14,5 +22,5 @@ A collection of "lubricant" for Ubuntu
 ## Unmaintained Scripts ##
 
 *   **install_openvmtools.sh** - script I no longer maintain for installing openvmtools based on [my blog post](http://cccarey.wordpress.com/howtos/howto-install-vmware-tools-on-ubuntu-810-intrepid/)
-*   **install_openvmtools_x.sh** - script I no longer maintain for installing openvmtools with X support based on [my blog post](http://cccarey.wordpress.com/howtos/howto-install-vmware-tools-on-ubuntu-810-intrepid/)
+*   **install_openvmtools_x.sh** - same as above, but with X support based on [my blog post](http://cccarey.wordpress.com/howtos/howto-install-vmware-tools-on-ubuntu-810-intrepid/)
 
