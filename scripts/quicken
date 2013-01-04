@@ -23,7 +23,7 @@ cfg() {
 }
 
 run() {
-	wine "c:\program files\quicken\qw.exe"
+	exec wine "c:\program files\quicken\qw.exe" &> /dev/null &
 }
 
 export WINEPREFIX=$HOME/.wine-quicken/
