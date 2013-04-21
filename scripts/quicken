@@ -1,30 +1,52 @@
 #!/usr/bin/env bash
 
+die() {
+    # $1 - the exit code
+    # $2 $... - the message string
+
+    retcode=$1
+    shift
+    printf >&2 "%s\n" "$@"
+    exit $retcode
+}
+
+wine_install() {
+    echo -n "wine not installed... script will attempt to install. N to cancel"
+    read resp
+    [[ "$resp" == "N" ]] && die 0 "cancel requested"
+    sudo apt-get install wine winetricks
+}
+
 quicken_install() {
-	winetricks fontfix
-	winetricks corefonts vcrun6
-	winetricks gdiplus
-	winetricks dotnet20
-	winetricks ie6
-	winetricks ie8
-	winecfg
-	
-	wine /tmp/Quicken_Deluxe_2011.exe
-	exit 0
+    [[ -s /tmp/Quicken_Deluxe_2011.exe ]] || die 1 "Quicken installer does not exist"
+
+    winetricks fontfix
+    winetricks corefonts vcrun6
+    winetricks gdiplus
+    winetricks dotnet20
+    winetricks ie6
+    winetricks ie8
+    winecfg
+
+    wine /tmp/Quicken_Deluxe_2011.exe
+    die 0 "Quicken Installed"
 }
 
-tricks() { 
-	winetricks
-	exit 0
+tricks() {
+    winetricks || die 1 "winetricks not installed"
+    die 0
 }
 
-cfg() { 
-	winecfg 
+cfg() {
+    winecfg || die 1 "wincfg not installed"
+    die 0
 }
 
 run() {
-	exec wine "c:\program files\quicken\qw.exe" &> /dev/null &
+    exec wine "c:\program files\quicken\qw.exe" &> /dev/null &
 }
+
+type wine >/dev/null 2>&1 || wine_install
 
 export WINEPREFIX=$HOME/.wine-quicken/
 export WINEARCH=win32
@@ -32,17 +54,11 @@ OPTION=$1
 
 if [ ! -z "$OPTION" ]
 then
-	if [ "$OPTION" = "install" ]
-	then
-		quicken_install
-	elif [ "$OPTION" = "tricks" ]
-	then
-		tricks
-	elif [ "$OPTION" = "cfg" ]
-	then
-		cfg
-	fi
+    [[ "$OPTION" == "install" ]] && quicken_install
+    [[ "$OPTION" == "tricks" ]] && tricks
+    [[ "$OPTION" == "cfg" ]] && cfg
+    die 1 "$OPTION is not valid"
 else
-	run
+    run
 fi
 
