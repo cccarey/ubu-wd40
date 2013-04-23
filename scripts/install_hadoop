@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# Script to install Hadoop per this tutorial:
+#   http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/
+#
+# ccarey - 2013-04-21
+
+die() {
+    # $1 - the exit code
+    # $2 $... - the message string
+
+    retcode=$1
+    shift
+    printf >&2 "%s\n" "$@"
+    exit $retcode
+}
+
+HADOOP_MIRROR="http://mirror.nexcess.net/apache/hadoop/common/"
+HADOOP_VERSION="1.0.4"
+ORIG_DIR="`pwd`"
+
+# Pre-requisites
+
+# Check for java... install if not there
+
+type java >/dev/null 2>&1 || sudo apt-get -y install openjdk-7-jdk
+
+# Add dedicated Hadoop system user
+
+sudo addgroup hadoop
+sudo adduser --ingroup hadoop hduser
+
+# Configure SSH
+
+su - hduser -c "ssh-keygen -t rsa -P '' && cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys && ssh localhost"
+
+# Get Hadoop
+
+cd /tmp
+
+[[ -d hadoop-${HADOOP_VERSION} ]] || {
+    [[ -f hadoop-${HADOOP_VERSION}.tar.gz ]] || {
+        wget ${HADOOP_MIRROR}/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
+    }
+    tar xfz hadoop-${HADOOP_VERSION}.tar.gz
+}
+
+#
+# You can also disable IPv6 only for Hadoop as documented in HADOOP-3437. You can do so by adding the following line to conf/hadoop-env.sh: conf/hadoop-env.sh
+
+# export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true
