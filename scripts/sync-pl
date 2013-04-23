@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+DATE=`date +%Y%m%d%H%M%S`
+SRC=/var/lib/mythtv/music
+DEST=/home/ccarey/test-sync
+
+if [ ! -z "$1" ]
+then
+    if [ -d "$1" ]
+    then
+        DEST="$1"
+    fi
+fi
+
+echo "$DATE"
+echo "$SRC"
+echo "$DEST"
+
+for file in `cat playlists/to-sync`
+do
+    grep -v "#EXT" "playlists/$file" >> /tmp/$DATE.m3u
+done
+
+uniq /tmp/$DATE.m3u /tmp/$DATE && mv /tmp/$DATE /tmp/$DATE.m3u
+
+cat /tmp/$DATE.m3u | xargs -d \\n du -sch |less
+
+echo "total size of files to copy is above... N to quit"
+read resp
+
+if [ "$resp" == "N" ]
+then
+    exit 0
+fi
+
+cut -f6- -d\/ /tmp/$DATE.m3u > /tmp/$DATE && mv /tmp/$DATE /tmp/$DATE.m3u
+
+sed -e 's/[*?\[]/\\&/g' -e 's/[*?[]/&/g' -e T -e 's/\\\\/\\/g' /tmp/$DATE.m3u > /tmp/$DATE && mv /tmp/$DATE /tmp/$DATE.m3u
+
+rsync -vrtD --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' --delete --delete-excluded \
+    --prune-empty-dirs $SRC $DEST
+
+if [ ! -d $DEST/playlists ]
+then
+    mkdir $DEST/playlists
+else
+    rm $DEST/playlists/*.m3u
+fi
+
+for file in `cat playlists/to-sync`
+do
+    sed -e 's/\/var\/lib\/mythtv\//..\//g' "playlists/$file" > $DEST/playlists/$file
+done
