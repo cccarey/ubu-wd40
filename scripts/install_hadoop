@@ -18,6 +18,7 @@ die() {
 HADOOP_MIRROR="http://mirror.nexcess.net/apache/hadoop/common/"
 HADOOP_VERSION="1.0.4"
 ORIG_DIR="`pwd`"
+INSTALL_ROOT="/opt"
 
 # Pre-requisites
 
@@ -32,7 +33,8 @@ sudo adduser --ingroup hadoop hduser
 
 # Configure SSH
 
-su - hduser -c "ssh-keygen -t rsa -P '' && cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys && ssh localhost"
+echo -n "hduser "
+su - hduser -c "ssh-keygen -t rsa -P '' && cat .ssh/id_rsa.pub >> .ssh/authorized_keys && ssh localhost 'exit'" || die 1 "cannot continue"
 
 # Get Hadoop
 
@@ -45,7 +47,124 @@ cd /tmp
     tar xfz hadoop-${HADOOP_VERSION}.tar.gz
 }
 
-#
-# You can also disable IPv6 only for Hadoop as documented in HADOOP-3437. You can do so by adding the following line to conf/hadoop-env.sh: conf/hadoop-env.sh
+# Extract/Install Hadoop
 
-# export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true
+cd ${INSTALL_ROOT}
+sudo tar xfz /tmp/hadoop-${HADOOP_VERSION}.tar.gz
+sudo chown -R hduser:hadoop hadoop-${HADOOP_VERSION}
+sudo ln -s hadoop-${HADOOP_VERSION} hadoop
+
+# Update $HOME/.bashrc
+
+sudo chmod 666 /home/hduser/.bashrc
+cat << EOF >> /home/hduser/.bashrc
+# Set Hadoop-related environment variables
+export HADOOP_HOME=${INSTALL_ROOT}/hadoop
+
+# Set JAVA_HOME (we will also configure JAVA_HOME directly for Hadoop later on)
+export JAVA_HOME=/usr/lib/jvm/java-6-sun
+
+# Some convenient aliases and functions for running Hadoop-related commands
+unalias fs &> /dev/null
+alias fs="hadoop fs"
+unalias hls &> /dev/null
+alias hls="fs -ls"
+
+# If you have LZO compression enabled in your Hadoop cluster and
+# compress job outputs with LZOP (not covered in this tutorial):
+# Conveniently inspect an LZOP compressed file from the command
+# line; run via:
+#
+# $ lzohead /hdfs/path/to/lzop/compressed/file.lzo
+#
+# Requires installed 'lzop' command.
+#
+lzohead () {
+    hadoop fs -cat $1 | lzop -dc | head -1000 | less
+}
+
+# Add Hadoop bin/ directory to PATH
+export PATH=\$PATH:\$HADOOP_HOME/bin
+EOF
+sudo chmod 644 /home/hduser/.bashrc
+
+# Configuration
+
+# hadoop-env.sh
+
+sudo sed -i "s/# export JAVA_HOME=\/usr\/lib\/j2sdk1\.5-sun/export JAVA_HOME=\/usr\/lib\/jvm\/java-7-openjdk-amd64/g" ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
+sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
+
+# conf/*-site.xml
+
+sudo mkdir -p ${INSTALL_ROOT}/hadoop/tmp
+sudo chown hduser:hadoop ${INSTALL_ROOT}/hadoop/tmp
+sudo chmod 750 ${INSTALL_ROOT}/hadoop/tmp
+
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+<configuration>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>${INSTALL_ROOT}/hadoop/tmp</value>
+        <description>A base for other temporary directories.</description>
+    </property>
+
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://localhost:54310</value>
+        <description>The name of the default file system.  A URI whose
+        scheme and authority determine the FileSystem implementation.  The
+        uri's scheme determines the config property (fs.SCHEME.impl) naming
+        the FileSystem implementation class.  The uri's authority is used to
+        determine the host, port, etc. for a filesystem.</description>
+    </property>
+</configuration>
+EOF
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/conf/mapred-site.xml
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/conf/mapred-site.xml
+
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/conf/mapred-site.xml
+sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/conf/mapred-site.xml
+<configuration>
+    <property>
+        <name>mapred.job.tracker</name>
+        <value>localhost:54311</value>
+        <description>The host and port that the MapReduce job tracker runs
+        at.  If "local", then jobs are run in-process as a single map
+        and reduce task.
+        </description>
+    </property>
+</configuration>
+EOF
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/conf/mapred-site.xml
+
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/conf/hdfs-site.xml
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/conf/hdfs-site.xml
+
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/conf/hdfs-site.xml
+sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/conf/hdfs-site.xml
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+        <description>Default block replication.
+        The actual number of replications can be specified when the file is created.
+        The default is used if replication is not specified in create time.
+        </description>
+    </property>
+</configuration>
+EOF
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/conf/hdfs-site.xml
+
+# Format HDFS filesystem
+
+echo -n "hduser "
+su - hduser -c "${INSTALL_ROOT}/hadoop/bin/hadoop namenode -format"
