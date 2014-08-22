@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DATE=`date +%Y%m%d%H%M%S`
-SRC=/var/lib/mythtv/music
+SRC=/mnt/data/ccarey/music
 DEST=/home/ccarey/test-sync
 
 if [ ! -z "$1" ]
@@ -23,7 +23,9 @@ done
 
 uniq /tmp/$DATE.m3u /tmp/$DATE && mv /tmp/$DATE /tmp/$DATE.m3u
 
-cat /tmp/$DATE.m3u | xargs -d \\n du -sch |less
+# cat /tmp/$DATE.m3u | xargs -d \\n du -sch |less
+rsync -vrtD --dry-run --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' --delete --delete-excluded \
+    --prune-empty-dirs $SRC $DEST
 
 echo "total size of files to copy is above... N to quit"
 read resp
