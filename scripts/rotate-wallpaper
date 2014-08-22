@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+TIME_MINS=15
+WALLPAPER_DIR="/home/ccarey/Pictures/cars"
+
+(( time = TIME_MINS * 60 ))
+
+while true; do
+    pic=$(ls $WALLPAPER_DIR/*.jpg| shuf -n1)
+    uri="file://$pic"
+    echo $uri
+    gsettings set org.gnome.desktop.background picture-uri $uri
+    sleep $time
+done   
