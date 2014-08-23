@@ -110,7 +110,9 @@ sudo chmod 644 /home/hduser/.bashrc
 # hadoop-env.sh
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/\\\${JAVA_HOME}/${JAVA_HOME}/g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+search="\${JAVA_HOME}"
+replace=`echo ${JAVA_HOME} |sed 's/\//\\\\\//g'`
+sudo sed -i "s/${search}/${replace}/g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
 sudo sed -i "s/HADOOP_OPTS=-Djava\.net\.preferIPv4Stack=true/HADOOP_OPTS=-Djava\.net\.preferIPv4Stack=true -Djava\.library\.path=\$HADOOP_PREFIX\/lib" ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
 
