@@ -89,7 +89,7 @@ lzohead () {
 }
 
 # Add Hadoop bin/ directory to PATH
-export PATH=\$PATH:\$HADOOP_HOME/bin
+export PATH=\$PATH:\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin
 EOF
 
 sudo chmod 644 /home/hduser/.bashrc
@@ -200,11 +200,11 @@ sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml || die 1 "cannot 
 # Format HDFS filesystem
 
 echo -n "hduser "
-su - hduser -c "hadoop namenode -format" || die 1 "cannot continue ... check error messages"
+su - hduser -c "${INSTALL_ROOT}/hadoop/bin/hdfs namenode -format" || die 1 "cannot continue ... check error messages"
 
 # Start DFS and yarn
 echo -n "hduser "
-su - hduser -c "start-dfs.sh" || die 1 "cannot continue ... check error messages"
+su - hduser -c "${INSTALL_ROOT}/hadoop/bin/start-dfs.sh" || die 1 "cannot continue ... check error messages"
 
 echo -n "hduser "
-su - hduser -c "start-yarn.sh"
+su - hduser -c "${INSTALL_ROOT}/hadoop/bin/start-yarn.sh"
