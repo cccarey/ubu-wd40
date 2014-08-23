@@ -96,7 +96,7 @@ alias hdpls="fs -ls"
 # Requires installed 'lzop' command.
 #
 lzohead () {
-    hadoop fs -cat $1 | lzop -dc | head -1000 | less
+    hadoop fs -cat \$1 | lzop -dc | head -1000 | less
 }
 
 # Add Hadoop bin/ directory to PATH
@@ -110,8 +110,18 @@ sudo chmod 644 /home/hduser/.bashrc
 # hadoop-env.sh
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
-sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/\${JAVA_HOME}/${JAVA_HOME}/g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/HADOOP_OPTS=-Djava\.net\.preferIPv4Stack=true/HADOOP_OPTS=-Djava\.net\.preferIPv4Stack=true -Djava\.library\.path=\$HADOOP_PREFIX\/lib" ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+
+# yarn-env.sh
+
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-env.sh || die 1 "cannot continue ... check error messages"
+sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-env.sh
+export HADOOP_CONF_LIB_NATIVE_DIR=\${HADOOP_PREFIX}-"/lib/native"}
+export HADOOP_OPTS="-Djava.library.path=\$HADOOP_PREFIX/lib"
+EOF
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-env.sh || die 1 "cannot continue ... check error messages"
 
 # etc/hadoop/*-site.xml
 
@@ -133,7 +143,7 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 
     <property>
         <name>fs.default.name</name>
-        <value>hdfs://localhost:54310</value>
+        <value>hdfs://localhost:9000</value>
         <description>The name of the default file system.  A URI whose
         scheme and authority determine the FileSystem implementation.  The
         uri's scheme determines the config property (fs.SCHEME.impl) naming
