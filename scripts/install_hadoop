@@ -92,20 +92,20 @@ sudo chmod 644 /home/hduser/.bashrc
 
 # hadoop-env.sh
 
-sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
-sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
-sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh || die 1 "cannot continue ... check error messages"
 
 # etc/hadoop/*-site.xml
 
-sudo mkdir -p ${INSTALL_ROOT}/hadoop/tmp
-sudo chown hduser:hadoop ${INSTALL_ROOT}/hadoop/tmp
-sudo chmod 750 ${INSTALL_ROOT}/hadoop/tmp
+sudo mkdir -p ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check error messages"
+sudo chown hduser:hadoop ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check error messages"
+sudo chmod 750 ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 <configuration>
     <property>
@@ -125,12 +125,12 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
     </property>
 </configuration>
 EOF
-sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
 <configuration>
     <property>
@@ -143,12 +143,12 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
     </property>
 </configuration>
 EOF
-sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
 <configuration>
     <property>
@@ -161,7 +161,7 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
     </property>
 </configuration>
 EOF
-sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
 
 # Format HDFS filesystem
 
