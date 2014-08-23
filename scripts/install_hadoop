@@ -15,6 +15,14 @@ die() {
     exit $retcode
 }
 
+runCommand() {
+    user=$1
+    command=$2
+
+    echo -n "hduser "
+    su - ${user} -c "export ${JAVA_HOME}; ${HADOOP_HOME}/${command}" || die 1 "cannot continue ... check error messages"
+}
+
 HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common"
 [[ -z "$1" ]] || {
     HADOOP_MIRROR="$1"
@@ -25,6 +33,9 @@ echo $HADOOP_MIRROR
 HADOOP_VERSION="2.5.0"
 ORIG_DIR="`pwd`"
 INSTALL_ROOT="/opt"
+
+JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+HADOOP_HOME=${INSTALL_ROOT}/hadoop
 
 # Pre-requisites
 
@@ -64,10 +75,10 @@ sudo ln -s hadoop-${HADOOP_VERSION} hadoop
 sudo chmod 666 /home/hduser/.bashrc
 cat << EOF >> /home/hduser/.bashrc
 # Set Hadoop-related environment variables
-export HADOOP_HOME=${INSTALL_ROOT}/hadoop
+export HADOOP_HOME=${HADOOP_HOME}
 
 # Set JAVA_HOME (we will also configure JAVA_HOME directly for Hadoop later on)
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export JAVA_HOME=${JAVA_HOME}
 
 # Some convenient aliases and functions for running Hadoop-related commands
 unalias hdpfs &> /dev/null
@@ -198,13 +209,9 @@ EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml || die 1 "cannot continue ... check error messages"
 
 # Format HDFS filesystem
-
-echo -n "hduser "
-su - hduser -c "${INSTALL_ROOT}/hadoop/bin/hdfs namenode -format" || die 1 "cannot continue ... check error messages"
+runCommand hduser "bin/hdfs namenode -format" || die 1 "cannot continue ... check error messages"
 
 # Start DFS and yarn
-echo -n "hduser "
-su - hduser -c "${INSTALL_ROOT}/hadoop/bin/start-dfs.sh" || die 1 "cannot continue ... check error messages"
+runCommand hduser "sbin/start-dfs.sh"
 
-echo -n "hduser "
-su - hduser -c "${INSTALL_ROOT}/hadoop/bin/start-yarn.sh"
+runCommand hduser "sbin/start-yarn.sh"
