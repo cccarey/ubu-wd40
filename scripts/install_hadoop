@@ -15,8 +15,8 @@ die() {
     exit $retcode
 }
 
-HADOOP_MIRROR="http://mirror.nexcess.net/apache/hadoop/common/"
-HADOOP_VERSION="1.0.4"
+HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common/"
+HADOOP_VERSION="2.5.0"
 ORIG_DIR="`pwd`"
 INSTALL_ROOT="/opt"
 
@@ -34,7 +34,7 @@ sudo adduser --ingroup hadoop hduser
 # Configure SSH
 
 echo -n "hduser "
-su - hduser -c "ssh-keygen -t rsa -P '' && cat .ssh/id_rsa.pub >> .ssh/authorized_keys && ssh localhost 'exit'" || die 1 "cannot continue"
+su - hduser -c "ssh-keygen -t rsa -P '' && cat .ssh/id_rsa.pub >> .ssh/authorized_keys && ssh -o StrictHostKeyChecking=no localhost 'exit'" || die 1 "cannot continue from configure of SSH"
 
 # Get Hadoop
 
@@ -42,7 +42,7 @@ cd /tmp
 
 [[ -d hadoop-${HADOOP_VERSION} ]] || {
     [[ -f hadoop-${HADOOP_VERSION}.tar.gz ]] || {
-        wget ${HADOOP_MIRROR}/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
+        wget ${HADOOP_MIRROR}/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz || die 1 "download of hadoop failed ... cannot continue"
     }
     tar xfz hadoop-${HADOOP_VERSION}.tar.gz
 }
@@ -86,6 +86,7 @@ lzohead () {
 # Add Hadoop bin/ directory to PATH
 export PATH=\$PATH:\$HADOOP_HOME/bin
 EOF
+
 sudo chmod 644 /home/hduser/.bashrc
 
 # Configuration
