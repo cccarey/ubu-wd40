@@ -15,10 +15,12 @@ die() {
     exit $retcode
 }
 
-HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common/"
+HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common"
 [[ -z "$1" ]] || {
     HADOOP_MIRROR="$1"
 }
+
+echo $HADOOP_MIRROR
 
 HADOOP_VERSION="2.5.0"
 ORIG_DIR="`pwd`"
@@ -130,9 +132,6 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 </configuration>
 EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
-
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
 <?xml version="1.0" encoding="UTF-8"?>
