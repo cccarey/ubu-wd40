@@ -20,7 +20,7 @@ runCommand() {
     command=$2
 
     echo -n "hduser "
-    su - ${user} -c "export ${JAVA_HOME}; ${HADOOP_HOME}/${command}" || die 1 "cannot continue ... check error messages"
+    su - ${user} -c "export JAVA_HOME=${JAVA_HOME}; ${HADOOP_HOME}/${command}" || die 1 "cannot continue ... check error messages"
 }
 
 HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common"
