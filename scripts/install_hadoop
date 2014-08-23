@@ -23,6 +23,12 @@ runCommand() {
     su - ${user} -c "export JAVA_HOME=${JAVA_HOME}; ${HADOOP_HOME}/${command}" || die 1 "cannot continue ... check error messages"
 }
 
+removeConfigNode() {
+    file=$1
+    sudo sed -i "s/<configuration>//g" ${file} || die 1 "cannot continue ... check error messages"
+    sudo sed -i "s/<\/configuration>//g" ${file} || die 1 "cannot continue ... check error messages"
+}
+
 HADOOP_MIRROR="http://mirror.cogentco.com/pub/apache/hadoop/common"
 [[ -z "$1" ]] || {
     HADOOP_MIRROR="$1"
@@ -131,8 +137,7 @@ sudo mkdir -p ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check err
 sudo chown hduser:hadoop ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check error messages"
 sudo chmod 750 ${INSTALL_ROOT}/hadoop/tmp || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
+removeConfigNode ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
@@ -157,8 +162,7 @@ EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 
 sudo cp ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml.template ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
+removeConfigNode ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
@@ -171,16 +175,15 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
 EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
+removeConfigNode ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
 <configuration>
     <property>
         <name>dfs.replication</name>
-        <value>1</value>
-        <!-- <value>3</value> -->
+        <!-- <value>1</value> -->
+        <value>3</value>
         <description>Default block replication.
         The actual number of replications can be specified when the file is created.
         The default is used if replication is not specified in create time.
@@ -190,8 +193,7 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml
 EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hdfs-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml || die 1 "cannot continue ... check error messages"
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml || die 1 "cannot continue ... check error messages"
+removeConfigNode ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml || die 1 "cannot continue ... check error messages"
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/yarn-site.xml
