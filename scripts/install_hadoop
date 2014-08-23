@@ -44,7 +44,6 @@ cd /tmp
     [[ -f hadoop-${HADOOP_VERSION}.tar.gz ]] || {
         wget ${HADOOP_MIRROR}/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz || die 1 "download of hadoop failed ... cannot continue"
     }
-    tar xfz hadoop-${HADOOP_VERSION}.tar.gz
 }
 
 # Extract/Install Hadoop
