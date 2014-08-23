@@ -92,18 +92,18 @@ sudo chmod 644 /home/hduser/.bashrc
 
 # hadoop-env.sh
 
-sudo chmod 666 ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
-sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
-sudo chmod 664 ${INSTALL_ROOT}/hadoop/conf/hadoop-env.sh
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
+sudo echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
+sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/hadoop-env.sh
 
-# conf/*-site.xml
+# etc/hadoop/*-site.xml
 
 sudo mkdir -p ${INSTALL_ROOT}/hadoop/tmp
 sudo chown hduser:hadoop ${INSTALL_ROOT}/hadoop/tmp
 sudo chmod 750 ${INSTALL_ROOT}/hadoop/tmp
 
-sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/conf/core-site.xml
-sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/conf/core-site.xml
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 
 sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
