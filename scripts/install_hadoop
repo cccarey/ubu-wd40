@@ -133,10 +133,12 @@ sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml
 EOF
 sudo chmod 664 ${INSTALL_ROOT}/hadoop/etc/hadoop/core-site.xml || die 1 "cannot continue ... check error messages"
 
-sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="configuation.xsl"?>
+sudo cp ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml.template ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
+sudo sed -i "s/<configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
+sudo sed -i "s/<\/configuration>//g" ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
 
+sudo chmod 666 ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml || die 1 "cannot continue ... check error messages"
+sudo cat << EOF >> ${INSTALL_ROOT}/hadoop/etc/hadoop/mapred-site.xml
 <configuration>
     <property>
         <name>mapreduce.framework.name</name>
