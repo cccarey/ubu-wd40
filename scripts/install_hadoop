@@ -90,7 +90,7 @@ export JAVA_HOME=${JAVA_HOME}
 unalias hdpfs &> /dev/null
 alias hdpfs="hadoop fs"
 unalias hdpls &> /dev/null
-alias hdpls="fs -ls"
+alias hdpls="hdpfs -ls"
 
 # If you have LZO compression enabled in your Hadoop cluster and
 # compress job outputs with LZOP (not covered in this tutorial):
