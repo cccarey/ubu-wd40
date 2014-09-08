@@ -3,7 +3,8 @@
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
-MUSIC_ROOT="/mnt/morpheus/data/Music/"
+# MUSIC_ROOT="/home/ccarey/Music/"
+MUSIC_ROOT=""
 
 PLAYLIST="$1"
 FOLDER_SONG="$2"
