@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+BASE_SERVER_NAME=""
+BASE_SERVER_IP=""
+CLONE_SERVER_NAME=""
+CLONE_SERVER_IP=""
+
+function die() {
+    # $1 - the exit code
+    # $2 $... - the message string
+    retcode=$1
+    shift
+    printf >&2 "%s\n" "$@"
+    exit $retcode
+}
+
+[[ -z "$1" ]] || {
+    [[ "$1" == "-h" || "$1" == "--help" ]] && {
+        die 0 "Usage: $0 [base server image name] [base server IP] [cloned server image name] [cloned server IP]"
+
+    }
+    BASE_SERVER_NAME="$1"
+}
+[[ -z "$2" ]] || BASE_SERVER_IP="$2"
+[[ -z "$3" ]] || CLONE_SERVER_NAME="$3"
+[[ -z "$4" ]] || CLONE_SERVER_IP="$4"
+
+function ssh_wait() {
+    host=$1
+    wait_for=$2
+    echo -n "Waiting for ssh"
+    while [ "`nc -z -w1 ${host} 22; echo $?`" != "${wait_for}" ]; do
+        echo -n "."
+        sleep 1
+    done
+    echo ""
+}
+
+[[ -z "$BASE_SERVER_NAME" ]] && {
+    echo -n "Enter Base Server Name  : "
+    read BASE_SERVER_NAME
+}
+[[ -z "$BASE_SERVER_IP" ]] && {
+    echo -n "Enter Base Server IP    : "
+    read BASE_SERVER_IP
+}
+[[ -z "$CLONE_SERVER_NAME" ]] && {
+    echo -n "Enter Cloned Server Name: "
+    read CLONE_SERVER_NAME
+}
+[[ -z "$CLONE_SERVER_IP" ]] && {
+    echo -n "Enter Cloned Server IP  : "
+    read CLONE_SERVER_IP
+}
+
+echo "Cloning $BASE_SERVER_NAME with IP address $BASE_SERVER_IP to $CLONE_SERVER_NAME with IP address $CLONE_SERVER_IP"
+echo "-------------------"
+
+SUDOPASSWD=""
+PASSCH="check"
+while [ "$SUDOPASSWD" != "$PASSCH" ]; do
+    echo -n "Enter sudo password: "
+    read -s SUDOPASSWD
+    echo
+
+    echo -n "Re-enter password..: "
+    read -s PASSCH
+    echo
+done
+
+echo "Cloning $BASE_SERVER_NAME to $CLONE_SERVER_NAME..."
+vboxmanage clonevm $BASE_SERVER_NAME --register --name $CLONE_SERVER_NAME || die 1 "failed to clone $CLONE_SERVER_NAME"
+
+echo "Starting $CLONE_SERVER_NAME..."
+vboxmanage startvm $CLONE_SERVER_NAME --type=headless || die 1 "failed to start $CLONE_SERVER_NAME"
+ssh_wait $BASE_SERVER_IP 0 # 0 is success
+
+echo "Copying ssh key..."
+ssh-copy-id -i ~/.ssh/id_rsa.pub $BASE_SERVER_IP || die 1 "failed to copy ssh key"
+
+echo "Updating machine name and IP address on server..."
+CMD="echo $SUDOPASSWD | sudo -S sed 's/$BASE_SERVER_NAME/$BASE_SERVER_NAME $CLONE_SERVER_NAME/g' -i /etc/hosts && 
+sudo hostname $CLONE_SERVER_NAME && 
+sudo sed 's/$BASE_SERVER_NAME/$CLONE_SERVER_NAME/g' -i /etc/hostname && 
+sudo sed 's/$BASE_SERVER_NAME $CLONE_SERVER_NAME/$CLONE_SERVER_NAME/g' -i /etc/hosts && 
+sudo sed 's/$BASE_SERVER_IP/$CLONE_SERVER_IP/g' -i /etc/network/interfaces &&
+sudo shutdown -P 0"
+ssh -t $BASE_SERVER_IP $CMD || die 1 "failed to update IP address or hostname on $CLONE_SERVER_NAME"
+
+echo "Waiting for shutdown to take a snapshot..."
+ssh_wait $BASE_SERVER_IP 1 # 1 is timeout
+
+echo "Taking snapshot..."
+vboxmanage snapshot $CLONE_SERVER_NAME take "cloned server with name and IP set" || die 1 "failed to take snapshot"
