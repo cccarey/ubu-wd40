@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DATE=`date +%Y%m%d%H%M%S`
-SRC=/mnt/usbdisk1/Music
+SRC=/mnt/usbdisk1/music
 DEST=/home/ccarey/test-sync
 
 [ -z "$1" ] || {
@@ -21,7 +21,7 @@ sort -u /tmp/$DATE.m3u > /tmp/$DATE && mv /tmp/$DATE /tmp/$DATE.m3u
 
 sed -i -e 's/[*?\[]/\\&/g' -e 's/[*?[]/&/g' -e T -e 's/\\\\/\\/g' /tmp/$DATE.m3u
 
-rsync -vrtD --dry-run --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' \
+rsync -vrtDL --dry-run --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' \
     --delete --delete-excluded --prune-empty-dirs $SRC $DEST
 
 echo "total size of files to copy is above... N to quit"
@@ -29,12 +29,12 @@ read resp
 
 [ "$resp" == "N" ] && exit 0
 
-rsync -vrtD --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' --delete \
+rsync -vrtDL --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude='*' --delete \
     --delete-excluded --prune-empty-dirs $SRC $DEST
 
 for file in `cat $SRC/to-sync`
 do
-    cp $SRC/$file $DEST/Music
+    cp $SRC/$file $DEST/music
 done
 
-# rm /tmp/$DATE.m3u
+rm /tmp/$DATE.m3u
