@@ -71,31 +71,6 @@ VM_IPS="192.168.56.21
 192.168.56.24
 192.168.56.25"
 
-for vm in $VMS
-do
-    vboxmanage snapshot $vm restore "psuedo-distributed mode installed"
-done
-
-for vm in $VMS
-do
-    vboxmanage startvm $vm --type=headless || die 1 "failed to start $vm"
-done
-
-echo -n "Press <Return> when machines are online..."
-read doit
-
-for vm in $VMS
-do
-    ssh-copy-id -i ~/.ssh/id_rsa.pub hduser@$vm || die 1 "failed to copy ssh key to $vm"
-done
-
-CMD="echo $SUDOPASSWD | sudo -S sh -c 'echo \"hadoopdatanode1\" > /opt/hadoop/etc/hadoop/slaves &&
-echo \"hadoopdatanode2\" >> /opt/hadoop/etc/hadoop/slaves &&
-echo \"hadoopdatanode3\" >> /opt/hadoop/etc/hadoop/slaves'"
-ssh -t 192.168.56.21 $CMD || die 1 "failed to setup masters and slaves on namenode"
-# Note: slaves entries on data nodes should not be needed. The entry in the files 
-# on those machines should be localhost
-
 cat << EOF > /tmp/hdfs-site.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -106,45 +81,66 @@ cat << EOF > /tmp/hdfs-site.xml
     </property>
     <property>
         <name>dfs.namenode.secondary.http-address</name>
-        <value>192.168.56.25:50090</value>
+        <value>hadoopsecondarynamenode:50090</value>
     </property>
 </configuration>
 EOF
-for vm in $VMS
-do
-    scp /tmp/hdfs-site.xml hduser@192.168.56.21:/opt/hadoop/etc/hadoop
-done && rm /tmp/hdfs-site.xml || die 1 "failed to change hdfs-site config"
+
+cat << EOF > /tmp/additional_hosts
+192.168.56.21   hadoopnamenode
+192.168.56.22   hadoopdatanode1
+192.168.56.23   hadoopdatanode2
+192.168.56.24   hadoopdatanode3
+192.168.56.25   hadoopsecondarynamenode
+EOF
 
 for vm in $VMS
 do
-    CMD='sed -i "s/localhost/hadoopnamenode/g" /opt/hadoop/etc/hadoop/core-site.xml &&
-    sed -i "s/localhost/hadoopnamenode/g" /opt/hadoop/etc/hadoop/yarn-site.xml'
+    vboxmanage snapshot $vm restore "psuedo-distributed mode installed"
+    vboxmanage startvm $vm --type=headless || die 1 "failed to start $vm"
+    ssh_wait $vm 0 # wait for ssh to come back
+
+    ssh-copy-id -i ~/.ssh/id_rsa.pub hduser@$vm || die 1 "failed to copy ssh key to $vm"
+
+    scp -q /tmp/hdfs-site.xml hduser@$vm:/opt/hadoop/etc/hadoop
+
+    CMD="sed -i 's/localhost/hadoopnamenode/g' /opt/hadoop/etc/hadoop/core-site.xml &&
+    sed -i 's/localhost/hadoopnamenode/g' /opt/hadoop/etc/hadoop/yarn-site.xml"
     ssh hduser@$vm $CMD || die 1 "failed to change core-site or yarn-site config on $vm"
+
+    CMD="rm -rf /opt/hadoop/tmp/*"
+    ssh hduser@$vm $CMD || die 1 "failed to remove files from tmp directory on $vm"
+
+    scp -q /tmp/additional_hosts $vm:/tmp
+    CMD="echo $SUDOPASSWD | sudo -S sh -c 'cat /tmp/additional_hosts >> /etc/hosts'"
+    ssh $vm $CMD || die 1 "failed to add new hosts to /etc/hosts on $vm"
+
+    CMD="echo $SUDOPASSWD | sudo -S sed -i 's/127.0.1.1/# 127.0.1.1/g' /etc/hosts"
+    ssh $vm $CMD || die 1 "failed to remove 127.0.1.1 entry from $vm"
+
+    echo
 done
-# remove /opt/hadoop/tmp/* on data nodes (22,23,24)
-# remove 127.0.1.1 entry from all hosts files - replace "127.0.1.1" with "# 127.0.1.1"
-# add entries to all hosts files
 
-# 192.168.56.21   hadoopnamenode
-# 192.168.56.22   hadoopdatanode1
-# 192.168.56.23   hadoopdatanode2
-# 192.168.56.24   hadoopdatanode3
-# 192.168.56.25   hadoopsecondarynamenode
+CMD="echo $SUDOPASSWD | sudo -S sh -c 'echo \"hadoopdatanode1\" > /opt/hadoop/etc/hadoop/slaves &&
+echo \"hadoopdatanode2\" >> /opt/hadoop/etc/hadoop/slaves &&
+echo \"hadoopdatanode3\" >> /opt/hadoop/etc/hadoop/slaves'"
+ssh -t hadoopnamenode $CMD || die 1 "failed to setup slaves on namenode"
 
-CMD="ssh -o StrictHostKeyChecking=no 192.168.56.21 'exit'"
-ssh -t hduser@192.168.56.21 $CMD || die 1 "failed to initialize ssh to 192.168.56.21"
-
-VM_IPS="192.168.56.22
-192.168.56.23
-192.168.56.24
-192.168.56.25"
-for machine in $VM_IPS
+for vm in $VMS
 do
-    CMD="scp -o StrictHostKeyChecking=no -r ~/.ssh $machine:~/ && ssh -o StrictHostKeyChecking=no $machine 'exit'"
-    ssh -t hduser@192.168.56.21 $CMD || die 1 "failed to copy ssh keys to $machine"
+    for machine in $VMS
+    do
+        echo "Copying ssh keys from $vm to $machine..."
+        CMD="scp -q -o StrictHostKeyChecking=no -r ~/.ssh $machine:~/ && ssh -o StrictHostKeyChecking=no $machine 'exit'"
+        ssh -t hduser@$vm $CMD || die 1 "failed to copy ssh keys to $machine on $vm"
+    done
 done
-# do above for server names as well
 
-# format namenode "hdfs namenode -format"
-# start-dfs.sh
-# start-yarn.sh
+rm /tmp/hdfs-site.xml /tmp/additional_hosts
+
+CMD="export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 &&
+export HADOOP_HOME=/opt/hadoop &&
+/opt/hadoop/bin/hdfs namenode -format && 
+/opt/hadoop/sbin/start-dfs.sh && 
+/opt/hadoop/sbin/start-yarn.sh"
+ssh hduser@hadoopnamenode $CMD || die 1 "failed to format namenode and start hadoop"
