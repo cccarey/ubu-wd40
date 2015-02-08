@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
+function usage() {
+    echo "Usage: $0 {{playlist file}} {{folder or song}}"
+    exit -1
+}
+
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 # MUSIC_ROOT="/home/ccarey/Music/"
 MUSIC_ROOT=""
+
+[[ -z "$1" ]] && usage
+[[ -z "$2" ]] && usage
 
 PLAYLIST="$1"
 FOLDER_SONG="$2"
@@ -12,7 +20,7 @@ FOLDER_SONG="$2"
 if [ -d ${MUSIC_ROOT}${FOLDER_SONG} ]
 then
     echo "Adding folder ${FOLDER_SONG}..."
-    find ${MUSIC_ROOT}${FOLDER_SONG} -name *.mp3 >> ${PLAYLIST}
+    find ${MUSIC_ROOT}${FOLDER_SONG} -name "*.mp3" >> ${PLAYLIST}
 else
     echo "Adding song ${FOLDER_SONG}..."
     find ${MUSIC_ROOT}${FOLDER_SONG} -print >> ${PLAYLIST}
