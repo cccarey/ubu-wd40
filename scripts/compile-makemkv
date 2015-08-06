@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+VERSION="1.9.4"
+
+function die() {
+    echo "$1"
+    [[ -z "$2" ]] || exit $2
+    exit 1
+}
+
+[[ -f makemkv-bin-$VERSION.tar.gz ]] || {
+    wget http://www.makemkv.com/download/makemkv-bin-$VERSION.tar.gz || die "Unable to retrieve bin tar ball"
+}
+
+[[ -f makemkv-oss-$VERSION.tar.gz ]] || {
+    wget http://www.makemkv.com/download/makemkv-oss-$VERSION.tar.gz || die "Unable to retrieve oss tar ball"
+}
+
+[[ -d makemkv-bin-$VERSION.tar.gz ]] || tar xfz makemkv-bin-$VERSION.tar.gz
+[[ -d makemkv-oss-$VERSION.tar.gz ]] || tar xfz makemkv-oss-$VERSION.tar.gz
+
+packages="build-essential
+libc6-dev
+libssl-dev
+libexpat1-dev
+libavcodec-dev
+libgl1-mesa-dev
+libqt4-dev"
+install_packages=""
+for package in $packages; do
+    dpkg -s "$package" >/dev/null 2>&1 || install_packages="$install_packages $package"
+done
+[[ $install_packages == "" ]] || sudo apt-get install $install_packages -y
+
+cd makemkv-oss-$VERSION
+./configure || die "Configure of oss package was unsuccessful"
+make || die "Make of oss package was unsuccessful"
+sudo make install || die "Install of oss package was unsuccessful"
+cd ..
+
+cd makemkv-bin-$VERSION
+# ./configure || die "Configure of bin package was unsuccessful"
+make || die "Make of bin package was unsuccessful"
+sudo make install || die "Install of bin package was unsuccessful"
+cd ..
+
