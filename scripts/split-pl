@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+PLAYLIST="$1"
+NUM_FILES="$2"
+
+[ -f $PLAYLIST ] || {
+    echo "$PLAYLIST not a file"
+    exit 1
+}
+
+[ -z "$NUM_FILES" ] && {
+    lines="`wc -l $PLAYLIST| cut -f1 -d' '`"
+    echo "lines - $lines"
+    (( NUM_FILES = ($lines + 998) / 999 ))
+}
+
+echo "NUM_FILES - $NUM_FILES"
+
+while IFS='' read -r line || [[ -n "$line" ]]; do
+    echo "$line" >> $(basename $PLAYLIST .m3u)-$(((RANDOM % $NUM_FILES) + 1)).m3u
+done < $PLAYLIST
