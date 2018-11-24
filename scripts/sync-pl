@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DATE=`date +%Y%m%d%H%M%S`
-SRC=/mnt/usbdisk1/music
+SRC=${PWD}
 DEST=/home/ccarey/test-sync
 
 [ -z "$1" ] || {
@@ -34,7 +34,7 @@ rsync -vrtDL --size-only --include-from=/tmp/$DATE.m3u --include='*/' --exclude=
 
 for file in `cat $SRC/to-sync`
 do
-    cp $SRC/$file $DEST/music
+    cp $SRC/$file $DEST/$(basename $SRC)
 done
 
 rm /tmp/$DATE.m3u
